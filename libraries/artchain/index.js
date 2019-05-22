@@ -13,4 +13,4 @@ if (process.cwd().indexOf("engine") === -1) {
   prefix = "code";
 }
 
-$$.loadLibrary("token", path.join(prefix, path.dirname(__filename), "token"));
+$$.loadLibrary("artchain", path.join(prefix, path.dirname(__filename), "main"));
