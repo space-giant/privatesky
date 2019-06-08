@@ -1,0 +1,1 @@
+{"meta":{"swarmTypeName":"artchain.TokenManagement","swarmId":"AxjCsX1Jy9pXGS6SZAmCenX8quPh2dt2RR6kRkDGWo","target":"system","homeSecurityContext":"system","phaseName":"__return__","phaseId":"A54VsfbA4KKXHSmhZvbtzptLC0iAjVbs70rtrn3EIY","args":["Receving account not valid (false) or not active (false)",null],"command":"asyncReturn"},"publicVars":{},"privateVars":{}}

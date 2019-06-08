@@ -1,6 +1,7 @@
 $$.asset.describe("Migration", {
   public: {
-    name: "string:alias",
+    alias: "string:alias",
+    name: "string",
     executionDate: "string"
   },
 

@@ -5,72 +5,64 @@ const states = {
 
 $$.asset.describe("Account", {
   public: {
-    alias: "string",
-    uid: "string:alias",
+    alias: "string:alias",
     owner: "string",
     amount: "number",
-    symbol: "string",
+    token: "string",
     state: "string"
   },
-  init: function(uid, symbol, owner) {
-    if (this.owner) {
-      return false;
-    }
 
-    this.uid = uid;
-    this.alias = uid;
-    this.symbol = symbol;
+  init: function(alias, token, owner) {
+    if (this.owner) return false;
+
+    this.alias = alias;
+    this.token = token;
     this.owner = owner;
     this.amount = 0;
     this.state = states.ACTIVE;
 
     return true;
   },
-  transfer: function(tokens) {
-    if (this.state !== states.ACTIVE) {
-      return false;
-    }
 
-    if (tokens > this.amount && tokens < 0) {
-      return false;
-    }
+  transfer: function(tokens) {
+    if (!this.isActive()) return false;
+    if (tokens > this.amount || tokens <= 0) return false;
 
     this.amount -= tokens;
     return true;
   },
-  receive: function(tokens) {
-    if (this.state !== states.ACTIVE) {
-      return false;
-    }
 
-    if (tokens < 0) {
-      return false;
-    }
+  receive: function(tokens) {
+    if (!this.isActive()) return false;
+
+    if (tokens <= 0) return false;
     this.amount += tokens;
+
     return true;
   },
-  valid: function() {
+
+  isValid: function() {
     return !!this.state;
   },
-  active: function() {
+
+  isActive: function() {
     return this.state === states.ACTIVE;
   },
-  close: function() {
-    if (this.amount > 0) {
-      return false;
-    }
 
-    if (this.state != states.ACTIVE) {
-      return false;
-    }
+  close: function() {
+    if (this.amount > 0) return false;
+    if (!this.isActive()) return false;
 
     this.state = states.INACTIVE;
+
     return true;
   },
-  balance: function() {
+
+  getBalance: function() {
     return this.amount;
   },
-  getSymbol: function() {
-    return this.symbol;
+
+  getToken: function() {
+    return this.token;
   }
 });

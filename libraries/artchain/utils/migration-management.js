@@ -10,20 +10,30 @@ $$.transaction.describe("MigrationManagement", {
 
     let migrationRun = transaction.lookup("artchain.Migration", name);
 
-    if (migrationRun.isExecuted(name)) return this.return(`"${name}" migration already executed!`);
-
-    try {
-      migrationRun.store(name);
-
-      run(transaction);
-
-      transaction.add(migrationRun);
-
-      $$.blockchain.commit(transaction);
-    } catch (err) {
-      return this.return(`"${name}" migration failed! ${err ? err.message : ""}`);
+    if (migrationRun.isExecuted(name)) {
+      console.log(`"${name}" migration already executed!`);
+      return this.return(`already_executed`);
     }
 
-    this.return(null, migrationRun.getInfo());
+    run
+      .call(this, transaction)
+      .then(result => {
+        try {
+          migrationRun.store(name);
+          transaction.add(migrationRun);
+          $$.blockchain.commit(transaction);
+        } catch (err) {
+          console.log(err);
+          return this.return(`"${name}" migration failed! ${err ? err.message : ""}`);
+        }
+
+        this.return(null, {
+          info: migrationRun.getInfo(),
+          result
+        });
+      })
+      .catch(err => {
+        this.return(`"${name}" migration failed! ${err ? err.message : ""}`);
+      });
   }
 });

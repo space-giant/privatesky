@@ -1,29 +1,32 @@
 $$.asset.describe("Token", {
   public: {
     alias: "string:alias",
-    name: "",
+    name: "string",
+    symbol: "string",
     emitter: "string",
     supply: "number"
   },
-  prepareToEmit: function(name, symbol) {
-    if (this.emitter) {
-      return false;
-    }
 
+  init: function(alias, name, symbol, emitter) {
+    if (this.emitter) return false;
+
+    this.alias = alias;
     this.name = name;
-    this.alias = symbol;
-    return true;
-  },
-  emit: function(supply, emitter) {
-    if (this.supply) {
-      return false;
-    }
-
+    this.symbol = symbol;
     this.emitter = emitter;
-    this.supply = supply;
+
     return true;
   },
-  totalSupply: function() {
+
+  emit: function(supply) {
+    if (this.supply) return false;
+
+    this.supply = supply;
+
+    return true;
+  },
+
+  getTotalSupply: function() {
     return this.supply;
   }
 });

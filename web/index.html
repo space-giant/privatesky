@@ -12,15 +12,16 @@
       const ris = interact.createRemoteInteractionSpace("testRemote", "http://127.0.0.1:8080", "local/agent/artchain");
       var tokenName = "TOKEN_NAME";
       var tokenSymbol = "TKN";
+
       ris
-        .startSwarm("token.accountManagement", "create", tokenSymbol, "user_id_from_classic_database")
+        .startSwarm("artchain.AccountManagement", "create", tokenSymbol, "user_id_from_classic_database")
         .onReturn(function(err, accountId) {
           if (err) {
             console.log(err);
           } else {
             console.log("New Account", accountId);
             ris
-              .startSwarm("token.tokenManagement", "emit", tokenName, tokenSymbol, 1000, accountId)
+              .startSwarm("artchain.TokenManagement", "emit", tokenName, tokenSymbol, 1000, accountId)
               .onReturn(function(error, symbol) {
                 if (error) {
                   console.log(error);

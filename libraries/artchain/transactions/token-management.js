@@ -1,36 +1,32 @@
+const { getAccount, getAccountAlias } = require("../utils/account-utils");
+
 $$.transaction.describe("TokenManagement", {
   emit: function(name, symbol, supply, owner) {
     let transaction = $$.blockchain.beginTransaction({});
-    // let uid = $$.uidGenerator.safe_uuid();
-    let newToken = transaction.lookup("artchain.Token", symbol);
 
-    if (!newToken.prepareToEmit(name, symbol)) {
-      this.return("Token already exists.");
-      return;
+    let token = $$.uidGenerator.safe_uuid();
+    let newToken = transaction.lookup("artchain.Token", token);
+
+    if (!newToken.init(token, name, symbol, owner)) return this.return(`Token ${token} already exists!`);
+    if (!newToken.emit(supply)) return this.return("Token cannot be emitted!");
+
+    let alias = getAccountAlias(owner, token);
+    let account = getAccount(transaction, owner, token);
+
+    if (!account.init(alias, token, owner)) {
+      return this.return(`Owner ${owner} already has an account for token ${token}!`);
     }
 
-    if (!newToken.emit(supply, owner)) {
-      this.return("Token issue failed.");
-      return;
-    }
-
-    let account = transaction.lookup("artchain.Account", owner);
-    if (!account.valid() || !account.active()) {
-      this.return("Receving account not valid or not active " + account.valid() + " " + account.active());
-      return;
-    }
-
-    account.receive(newToken.totalSupply());
+    account.receive(supply);
 
     try {
       transaction.add(newToken);
       transaction.add(account);
       $$.blockchain.commit(transaction);
     } catch (err) {
-      this.return("Token issue commit failed. ");
-      return;
+      return this.return(`Token issue commit failed! ${err ? err.message : ""}`);
     }
 
-    this.return(null, symbol);
+    this.return(null, token);
   }
 });

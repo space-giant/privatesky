@@ -1,68 +1,60 @@
+const { getAccount, getAccountAlias } = require("../utils/account-utils");
+
 $$.transaction.describe("AccountManagement", {
-  create: function(symbol, owner) {
-    let transaction = $$.blockchain.beginTransaction({});
-    let uid = $$.uidGenerator.safe_uuid();
-    let account = transaction.lookup("artchain.Account", uid);
-
-    account.init(uid, symbol, owner);
-
-    try {
-      transaction.add(account);
-      $$.blockchain.commit(transaction);
-    } catch (err) {
-      this.return("Account creation failed!");
-      return;
-    }
-    this.return(null, uid);
-  },
-  close: function(accountId) {
+  create: function(owner, token) {
     let transaction = $$.blockchain.beginTransaction({});
 
-    let account = transaction.lookup("artchain.Account", accountId);
+    let alias = getAccountAlias(owner, token);
+    let account = getAccount(transaction, owner, token);
 
-    if (!account.valid()) {
-      this.return("Invalid account");
-      return;
-    }
-
-    if (!account.active()) {
-      this.return("Account is not active.");
-      return;
-    }
-
-    if (account.balance() > 0) {
-      this.return("Account balance to high.");
-      return;
-    }
-
-    if (!account.close()) {
-      this.return("Account closing procedure failed.");
-      return;
+    if (!account.init(alias, token, owner)) {
+      return this.return(`Owner ${owner} already has an account for token ${token}!`);
     }
 
     try {
       transaction.add(account);
       $$.blockchain.commit(transaction);
     } catch (err) {
-      this.return("Account closing procedure failed.");
-      return;
+      return this.return(`Account creation failed for owner ${owner} and token ${token}! ${err ? err.message : ""}`);
     }
 
-    this.return(null, accountId);
+    this.return(null, account);
   },
-  transfer: function(tokens, symbol, from, to) {
+
+  close: function(owner, token) {
     let transaction = $$.blockchain.beginTransaction({});
 
-    let sourceAccount = transaction.lookup("artchain.Account", from);
-    if (sourceAccount.getSymbol() !== symbol || !sourceAccount.transfer(tokens)) {
-      this.return("Transfer failed!");
-      return;
+    let account = getAccount(transaction, owner, token);
+
+    if (!account.isValid()) return this.return("Invalid account!");
+    if (!account.isActive()) return this.return("Account is not active!");
+
+    let balance = account.getBalance();
+    if (balance > 0) return this.return(`Account balance is non zero (${balance})!`);
+
+    if (!account.close()) return this.return("Account closing procedure failed!");
+
+    try {
+      transaction.add(account);
+      $$.blockchain.commit(transaction);
+    } catch (err) {
+      return this.return(`Account closing procedure failed! ${err ? err.message : ""}`);
     }
 
-    let targetAccount = transaction.lookup("artchain.Account", to);
-    if (targetAccount.getSymbol() !== symbol || !targetAccount.receive(tokens)) {
-      this.return("Transfer failed");
-      return;
+    this.return(null, account.uid);
+  },
+
+  transfer: function(source, target, token, amount) {
+    let transaction = $$.blockchain.beginTransaction({});
+
+    let sourceAccount = getAccount(transaction, source, token);
+    if (sourceAccount.getToken() !== token || !sourceAccount.transfer(amount)) {
+      return this.return("Source transfer failed!");
+    }
+
+    let targetAccount = getAccount(transaction, target, token);
+    if (targetAccount.getToken() !== token || !targetAccount.receive(amount)) {
+      return this.return("Target transfer failed!");
     }
 
     try {
@@ -70,8 +62,7 @@ $$.transaction.describe("AccountManagement", {
       transaction.add(targetAccount);
       $$.blockchain.commit(transaction);
     } catch (err) {
-      this.return("Transfer failed!");
-      return;
+      return this.return(`Transfer failed! ${err ? err.message : ""}`);
     }
 
     // temp fix; must clarify
@@ -79,19 +70,13 @@ $$.transaction.describe("AccountManagement", {
 
     this.return(null, uid);
   },
-  balanceOf: function(accountId) {
+
+  balanceOf: function(owner, token) {
     let transaction = $$.blockchain.beginTransaction({});
-    let account = transaction.lookup("artchain.Account", accountId);
+    let account = getAccount(transaction, owner, token);
 
-    if (!account.valid()) {
-      this.return("Invalid account");
-      return;
-    }
-
-    if (!account.active()) {
-      this.return("Account is not active.");
-      return;
-    }
+    if (!account.isValid()) return this.return("Invalid account");
+    if (!account.isActive()) return this.return("Account is not active.");
 
     this.return(null, account.balance());
   }
