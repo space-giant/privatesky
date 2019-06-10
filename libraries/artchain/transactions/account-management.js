@@ -18,7 +18,7 @@ $$.transaction.describe("AccountManagement", {
       return this.return(`Account creation failed for owner ${owner} and token ${token}! ${err ? err.message : ""}`);
     }
 
-    this.return(null, account);
+    this.return(null, alias);
   },
 
   close: function(owner, token) {
