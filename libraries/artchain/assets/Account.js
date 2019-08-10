@@ -6,38 +6,31 @@ const states = {
 $$.asset.describe("Account", {
   public: {
     alias: "string:alias",
-    owner: "string",
-    amount: "number",
-    token: "string",
+    wallets: "object",
+    financings: "object",
     state: "string"
   },
 
-  init: function(alias, token, owner) {
+  init: function(alias) {
     if (this.owner) return false;
 
     this.alias = alias;
-    this.token = token;
-    this.owner = owner;
-    this.amount = 0;
     this.state = states.ACTIVE;
+    this.wallets = [];
+    this.financings = [];
 
     return true;
   },
 
-  transfer: function(tokens) {
-    if (!this.isActive()) return false;
-    if (tokens > this.amount || tokens <= 0) return false;
-
-    this.amount -= tokens;
-    return true;
+  isTokenPresent: function(token) {
+    let wallets = Object.keys(this.wallets);
+    return wallets.length && wallets.some(x => x === token);
   },
 
-  receive: function(tokens) {
-    if (!this.isActive()) return false;
+  addWallet: function(token, address) {
+    if (this.isTokenPresent(token)) return false;
 
-    if (tokens <= 0) return false;
-    this.amount += tokens;
-
+    this.wallets[token] = address;
     return true;
   },
 
@@ -50,19 +43,10 @@ $$.asset.describe("Account", {
   },
 
   close: function() {
-    if (this.amount > 0) return false;
     if (!this.isActive()) return false;
 
     this.state = states.INACTIVE;
 
     return true;
-  },
-
-  getBalance: function() {
-    return this.amount;
-  },
-
-  getToken: function() {
-    return this.token;
   }
 });

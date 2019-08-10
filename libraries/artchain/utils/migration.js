@@ -6,6 +6,7 @@ $$.asset.describe("Migration", {
   },
 
   isExecuted: function(name) {
+    return false;
     return this.name === name;
   },
 

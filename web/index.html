@@ -7,30 +7,30 @@
   </head>
   <body>
     <script>
-      const interact = pskclientRequire("interact");
-      interact.enableRemoteInteractions();
-      const ris = interact.createRemoteInteractionSpace("testRemote", "http://127.0.0.1:8080", "local/agent/artchain");
-      var tokenName = "TOKEN_NAME";
-      var tokenSymbol = "TKN";
+      // const interact = pskclientRequire("interact");
+      // interact.enableRemoteInteractions();
+      // const ris = interact.createRemoteInteractionSpace("testRemote", "http://127.0.0.1:8080", "local/agent/artchain");
+      // var tokenName = "TOKEN_NAME";
+      // var tokenSymbol = "TKN";
 
-      ris
-        .startSwarm("artchain.AccountManagement", "create", tokenSymbol, "user_id_from_classic_database")
-        .onReturn(function(err, accountId) {
-          if (err) {
-            console.log(err);
-          } else {
-            console.log("New Account", accountId);
-            ris
-              .startSwarm("artchain.TokenManagement", "emit", tokenName, tokenSymbol, 1000, accountId)
-              .onReturn(function(error, symbol) {
-                if (error) {
-                  console.log(error);
-                } else {
-                  console.log("Finished creation of token", symbol);
-                }
-              });
-          }
-        });
+      // ris
+      //   .startSwarm("artchain.AccountManagement", "create", tokenSymbol, "user_id_from_classic_database")
+      //   .onReturn(function(err, accountId) {
+      //     if (err) {
+      //       console.log(err);
+      //     } else {
+      //       console.log("New Account", accountId);
+      //       ris
+      //         .startSwarm("artchain.TokenManagement", "emit", tokenName, tokenSymbol, 1000, accountId)
+      //         .onReturn(function(error, symbol) {
+      //           if (error) {
+      //             console.log(error);
+      //           } else {
+      //             console.log("Finished creation of token", symbol);
+      //           }
+      //         });
+      //     }
+      //   });
     </script>
   </body>
 </html>
