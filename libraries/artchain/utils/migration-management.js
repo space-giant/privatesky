@@ -12,14 +12,14 @@ $$.transaction.describe("MigrationManagement", {
 
     if (migrationRun.isExecuted(name)) {
       console.log(`"${name}" migration already executed!`);
-      return this.return(`already_executed`);
+      return this.return(`already_executed`, migrationRun.getResult());
     }
 
     run
       .call(this, transaction)
       .then(result => {
         try {
-          migrationRun.store(name);
+          migrationRun.store(name, result);
           transaction.add(migrationRun);
           $$.blockchain.commit(transaction);
         } catch (err) {
