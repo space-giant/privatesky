@@ -1,6 +1,19 @@
-const deployer = require("./../../deployer/Deployer.js");
+/*
+* script to install all PSK deployment deps
+*/
+
+const path = require("path");
+const deployer = require(path.resolve(path.join(__dirname, "./../../deployer/Deployer.js")));
 
 const baseDeps = [
+    { //TOBE: deleted
+        "name": "yazl",
+        "src": "https://github.com/PrivateSky/yazl.git"
+    },
+    {//TOBE: deleted
+        "name": "yauzl",
+        "src": "https://github.com/PrivateSky/yauzl.git"
+    },
     {
         "name": "foldermq",
         "src": "https://github.com/PrivateSky/foldermq.git"
@@ -12,6 +25,10 @@ const baseDeps = [
     {
         "name": "callflow",
         "src": "https://github.com/PrivateSky/callflow.git"
+    },
+    {
+        "name": "browser-server",
+        "src": "https://github.com/PrivateSky/browser-server"
     },
     {
         "name": "browserfs-dist",
@@ -42,14 +59,6 @@ const baseDeps = [
         "src": "https://github.com/PrivateSky/psk-browser-utils.git"
     },
     {
-        "name": "yazl",
-        "src": "https://github.com/PrivateSky/yazl.git"
-    },
-    {
-        "name": "yauzl",
-        "src": "https://github.com/PrivateSky/yauzl.git"
-    },
-    {
         "name": "buffer-crc32",
         "src": "https://github.com/PrivateSky/buffer-crc32.git"
     },
@@ -70,17 +79,43 @@ const baseDeps = [
 		"src": "https://github.com/PrivateSky/pskbuffer.git"
 	},
     {
-		"name": "csb-core",
-		"src": "https://github.com/PrivateSky/csb-core.git"
-	}];
+		"name": "edfs",
+		"src": "https://github.com/PrivateSky/edfs.git"
+	},
+    {
+        "name": "blockchain",
+        "src": "https://github.com/PrivateSky/blockchain.git"
+    },
+    {
+        "name": "bar",
+        "src": "https://github.com/PrivateSky/bar.git"
+    },
+    {
+        "name": "edfs-brick-storage",
+        "src": "https://github.com/PrivateSky/edfs-brick-storage.git"
+    },
+    {
+        "name": "csb",
+        "src": "https://github.com/PrivateSky/csb.git"
+    },
+    {
+        "name": "psklogger",
+        "src": "https://github.com/PrivateSky/psklogger.git"
+    },
+    {
+        "name": "pskisolates",
+        "src": "https://github.com/PrivateSky/pskisolates.git"
+    },
+    {
+        "name": "pskbuffer",
+        "src": "https://github.com/PrivateSky/pskbuffer.git"
+    }
+];
+
 
 const config = {
     "workDir": ".",
     "dependencies": [
-        {
-            "name": "signsensus",
-            "src": "https://github.com/PrivateSky/signsensus.git"
-        },
         {
             "name": "dicontainer",
             "src": "https://github.com/PrivateSky/dicontainer.git"
@@ -97,10 +132,6 @@ const config = {
             "name": "swarmutils",
             "src": "https://github.com/PrivateSky/swarmutils.git"
         },
-		{
-			"name": "psk-combo-utils",
-			"src": "https://github.com/PrivateSky/psk-combo-utils.git",
-		},
         {
             "name": "psk-integration-testing",
             "src": "https://github.com/PrivateSky/psk-integration-testing.git",
@@ -108,14 +139,6 @@ const config = {
                 {
                     "type": "smartClone",
                     "target": "tests"
-                },
-                {
-                    "type": "copy",
-                    "src": "tests/psk-integration-testing/core/testSwarms",
-                    "target": "libraries/testSwarms",
-                    "options": {
-                        "overwrite": true
-                    }
                 }
             ]
         },
@@ -140,16 +163,21 @@ const config = {
             ]
         },
         {
-            "name": "browserify chokidar",
-            "src": "npm",
-            "actions": ["install"]
+            "name": "psk-browser-tests",
+            "src": "https://github.com/PrivateSky/psk-browser-tests.git",
+            "actions": [
+                {
+                    "type": "smartClone",
+                    "target": "tests"
+                }
+            ]
         },
         {
-            "name": "karma mocha karma-mocha karma-chrome-launcher karma-firefox-launcher karma-html karma-ie-launcher karma-opera-launcher karma-safari-launcher",
+            "name": "",
             "src": "npm",
-            "actions": ["install"]
+            "actions": ["install"],
+            "workDir": "tests/psk-browser-tests"
         }
-
     ]
 };
 
@@ -182,7 +210,7 @@ config.dependencies = baseDeps.concat(config.dependencies, pskWalletConfig.depen
 pskWalletConfig.dependencies = baseDeps.concat(pskWalletConfig.dependencies);
 
 
-const argv = Object.assign([], process.argv);
+const argv = process.argv;
 argv.shift();
 argv.shift();
 
@@ -192,6 +220,7 @@ function runDeployer(config, callback = () => {}) {
     deployer.run(config, function (error, result) {
         if (error) {
             console.log("[Builder - Error]", error);
+            process.exit(1);
         } else {
             console.log("[Builder - Result]", result);
         }
