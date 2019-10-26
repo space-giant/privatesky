@@ -6,7 +6,7 @@ const path = require("path");
 const deployer = require(path.resolve(path.join(__dirname, "./../../deployer/Deployer.js")));
 
 const baseDeps = [
-    { //TOBE: deleted
+    {//TOBE: deleted
         "name": "yazl",
         "src": "https://github.com/PrivateSky/yazl.git"
     },
@@ -109,6 +109,10 @@ const baseDeps = [
     {
         "name": "pskbuffer",
         "src": "https://github.com/PrivateSky/pskbuffer.git"
+    },
+    {
+        "name": "zmq_adapter",
+        "src": "https://github.com/PrivateSky/zmq_adapter.git"
     }
 ];
 
