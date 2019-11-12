@@ -1,8 +1,3 @@
-// const financingTypes = {
-//   ANALOGIC: 1,
-//   DIGITAL: 2
-// };
-
 const financingStatuses = {
   EDIT: 1,
   EVALUATION: 2,
@@ -29,7 +24,9 @@ $$.asset.describe("Financing", {
     daysDuration: "number",
     daysDelivery: "number",
     periodCount: "number",
-    status: "number"
+    status: "number",
+    ownerWallet: "string",
+    ownerSharesWallet: "string"
   },
 
   init: function(alias, owner, beneficiary, info) {
@@ -38,6 +35,22 @@ $$.asset.describe("Financing", {
     this.alias = alias;
     this.owner = owner;
     this.beneficiary = beneficiary;
+
+    this.name = info.name;
+    this.motivation = info.motivation;
+    this.type = info.type;
+    this.softcap = info.softcap;
+    this.hardcap = info.hardcap;
+    this.daysDuration = info.daysDuration;
+    this.daysDelivery = info.daysDelivery;
+    this.periodCount = info.periodCount;
+    this.status = financingStatuses.EDIT;
+
+    return true;
+  },
+
+  updateInfo: function(info) {
+    if (!this.alias) return false;
 
     this.name = info.name;
     this.motivation = info.motivation;
@@ -66,6 +79,11 @@ $$.asset.describe("Financing", {
 
   setToken: function(token) {
     this.token = token;
+  },
+
+  setOwnerWallets: function(ownerWallet, ownerSharesWallet) {
+    this.ownerWallet = ownerWallet;
+    this.ownerSharesWallet = ownerSharesWallet;
   },
 
   canApprove: function() {
@@ -135,6 +153,17 @@ $$.asset.describe("Financing", {
     if (!this.canDelete()) return false;
 
     this.status = financingStatuses.DELETED;
+    return true;
+  },
+
+  canFinalize: function() {
+    return this.status === financingStatuses.STARTED;
+  },
+
+  finalize: function() {
+    if (!this.canFinalize()) return false;
+
+    this.status = financingStatuses.FINALIZED;
     return true;
   }
 });

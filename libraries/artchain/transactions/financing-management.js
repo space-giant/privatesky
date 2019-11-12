@@ -25,6 +25,27 @@ $$.transaction.describe("FinancingManagement", {
     });
   },
 
+  updateInfo: function(financingAlias, financingInfo) {
+    let transaction = $$.blockchain.beginTransaction({});
+
+    let financing = transaction.lookup("artchain.Financing", financingAlias);
+    if (!financing.updateInfo(financingInfo)) {
+      return this.return(`Financing ${financingAlias} cannot be updated because it doesn't exist!`);
+    }
+
+    try {
+      transaction.add(financing);
+      $$.blockchain.commit(transaction);
+    } catch (err) {
+      return this.return(`Financing update info failed! ${err ? err.message : ""}`);
+    }
+
+    this.return(null, {
+      financing: financingAlias,
+      financingInfo: financingInfo
+    });
+  },
+
   approve: function(financingAlias) {
     let transaction = $$.blockchain.beginTransaction({});
 
@@ -85,7 +106,7 @@ $$.transaction.describe("FinancingManagement", {
     this.return(null);
   },
 
-  start: function(financingAlias, tokenInfo) {
+  start: function(financingAlias, tokenInfo, mainToken) {
     let transaction = $$.blockchain.beginTransaction({});
 
     let financing = transaction.lookup("artchain.Financing", financingAlias);
@@ -104,35 +125,49 @@ $$.transaction.describe("FinancingManagement", {
     let account = transaction.lookup("artchain.Account", owner);
     account.init(); // ensure that the account is created
 
-    let token = $$.uidGenerator.safe_uuid();
-    let newToken = transaction.lookup("artchain.Token", token);
+    let sharesToken = $$.uidGenerator.safe_uuid();
+    let newToken = transaction.lookup("artchain.Token", sharesToken);
 
-    if (!newToken.init(token, tokenInfo.name, tokenInfo.symbol, owner))
-      return this.return(`Token ${token} already exists!`);
-    if (!newToken.emit(tokenInfo.supply)) return this.return("Token cannot be emitted!");
+    if (!newToken.init(sharesToken, tokenInfo.name, tokenInfo.symbol, owner))
+      return this.return(`Share token ${sharesToken} already exists!`);
+    if (!newToken.emit(tokenInfo.supply)) return this.return("Share token cannot be emitted!");
 
-    let walletAlias = $$.uidGenerator.safe_uuid();
-    if (!account.addWallet(token, walletAlias)) {
-      return this.return(`Owner ${owner} already has an wallet for token ${token}!`);
+    let sharesWalletAlias = $$.uidGenerator.safe_uuid();
+    if (!account.addWallet(sharesToken, sharesWalletAlias)) {
+      return this.return(`Owner ${owner} already has an wallet for share token ${sharesToken}!`);
     }
 
-    let wallet = transaction.lookup("artchain.Wallet", walletAlias);
-    if (!wallet.init(walletAlias, token, owner)) {
+    let sharesWallet = transaction.lookup("artchain.Wallet", sharesWalletAlias);
+    if (!sharesWallet.init(sharesWalletAlias, sharesToken, owner)) {
       return this.return(
-        `Owner ${owner} cannot create wallet for token ${token} because generated wallet address (${walletAlias}) is already in use!`
+        `Owner ${owner} cannot create wallet for token ${sharesToken} because generated wallet address (${sharesWalletAlias}) is already in use!`
       );
     }
 
-    wallet.receive(tokenInfo.supply);
+    let mainWalletAlias = $$.uidGenerator.safe_uuid();
+    if (!account.addWallet(mainToken, mainWalletAlias)) {
+      return this.return(`Owner ${owner} already has an wallet for main token ${mainToken}!`);
+    }
 
-    financing.setToken(token);
+    let mainWallet = transaction.lookup("artchain.Wallet", mainWalletAlias);
+    if (!mainWallet.init(mainWalletAlias, mainToken, owner)) {
+      return this.return(
+        `Owner ${owner} cannot create wallet for main token ${mainToken} because generated wallet address (${mainWalletAlias}) is already in use!`
+      );
+    }
+
+    sharesWallet.receive(tokenInfo.supply);
+
+    financing.setToken(sharesToken);
+    financing.setOwnerWallets(mainWalletAlias, sharesWalletAlias);
     financing.start();
 
     try {
       transaction.add(financing);
       transaction.add(account);
       transaction.add(newToken);
-      transaction.add(wallet);
+      transaction.add(sharesWallet);
+      transaction.add(mainWallet);
       $$.blockchain.commit(transaction);
     } catch (err) {
       return this.return(`Financing ${financingAlias} failed to be started! ${err ? err.message : ""}`);
@@ -140,8 +175,9 @@ $$.transaction.describe("FinancingManagement", {
 
     this.return(null, {
       financing: financingAlias,
-      token,
-      wallet: walletAlias
+      token: sharesToken,
+      sharesWallet: sharesWalletAlias,
+      mainWallet: mainWalletAlias
     });
   },
 
@@ -180,6 +216,37 @@ $$.transaction.describe("FinancingManagement", {
       $$.blockchain.commit(transaction);
     } catch (err) {
       return this.return(`Financing ${financingAlias} failed to be deleted! ${err ? err.message : ""}`);
+    }
+
+    this.return(null);
+  },
+
+  finalize: function(financingAlias) {
+    let transaction = $$.blockchain.beginTransaction({});
+
+    let financing = transaction.lookup("artchain.Financing", financingAlias);
+
+    let ownerSharesWallet = transaction.lookup("artchain.Wallet", financing.ownerSharesWallet);
+
+    if (!ownerSharesWallet.isValid()) return this.return("Invalid wallet");
+    if (!ownerSharesWallet.isActive()) return this.return("Wallet is not active.");
+    if (ownerSharesWallet.getBalance() !== 0) {
+      return this.return(
+        `Expected shares wallet to have balance = 0, but instead found ${ownerSharesWallet.getBalance()}`
+      );
+    }
+
+    if (!financing.finalize()) {
+      return this.return(
+        `Financing ${financingAlias} cannot be finalized because it has the following status: ${financing.getStatus()}!`
+      );
+    }
+
+    try {
+      transaction.add(financing);
+      $$.blockchain.commit(transaction);
+    } catch (err) {
+      return this.return(`Financing ${financingAlias} failed to be finalized! ${err ? err.message : ""}`);
     }
 
     this.return(null);

@@ -3,14 +3,14 @@ if (typeof $$ !== "undefined" && typeof $$.blockchain === "undefined") {
   $$.blockchain = pskDB.startDB("./database");
 }
 
-const path = require("path");
+// const path = require("path");
 
-let prefix = "..";
+// let prefix = "..";
 
-//temporary fix
-//cwd and point of reference is different when loaded in domain vs agent
-if (process.cwd().indexOf("engine") === -1) {
-  prefix = "code";
-}
+// //temporary fix
+// //cwd and point of reference is different when loaded in domain vs agent
+// if (process.cwd().indexOf("engine") === -1) {
+//   prefix = "code";
+// }
 
-$$.loadLibrary("artchain", path.join(prefix, path.dirname(__filename), "main"));
+$$.loadLibrary("artchain", require("./main"));

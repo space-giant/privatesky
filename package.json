@@ -38,7 +38,8 @@
     "@msgpack/msgpack": "^1.8.0",
     "browserify": "^16.5.0",
     "chokidar": "^3.0.2",
-    "source-map-support": "^0.5.13"
+    "source-map-support": "^0.5.13",
+    "zeromq": "^5.1.1"
   },
   "devDependencies": {
     "babel-eslint": "7.2.3",
