@@ -39,15 +39,7 @@
     "browserify": "^16.5.0",
     "chokidar": "^3.0.2",
     "source-map-support": "^0.5.13",
-    "zeromq": "^5.1.1"
-  },
-  "devDependencies": {
-    "babel-eslint": "7.2.3",
-    "eslint": "5.4.0",
-    "eslint-config-prettier": "2.9.0",
-    "eslint-plugin-import": "2.14.0",
-    "eslint-plugin-prettier": "2.6.0",
-    "prettier": "1.14.0"
+    "zeromq": "^4.6.0"
   },
   "scripts": {
     "preinstall": "node bin/scripts/preinstall-checks.js",

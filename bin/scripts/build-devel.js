@@ -14,9 +14,13 @@ const baseDeps = [
         "name": "yauzl",
         "src": "https://github.com/PrivateSky/yauzl.git"
     },
-    {
+    {//TOBE: deleted
         "name": "foldermq",
         "src": "https://github.com/PrivateSky/foldermq.git"
+    },
+    {
+        "name": "swarm-engine",
+        "src": "https://github.com/PrivateSky/swarm-engine.git"
     },
     {
         "name": "soundpubsub",
@@ -25,6 +29,10 @@ const baseDeps = [
     {
         "name": "callflow",
         "src": "https://github.com/PrivateSky/callflow.git"
+    },
+    {
+        "name": "choreo",
+        "src": "https://github.com/PrivateSky/choreo.git"
     },
     {
         "name": "browser-server",
@@ -121,6 +129,10 @@ const baseDeps = [
     {
         "name": "psk-security-context",
         "src": "https://github.com/PrivateSky/psk-security-context.git"
+    },
+    {
+        "name": "adler32",
+        "src": "https://github.com/PrivateSky/adler.git"
     }
 ];
 
