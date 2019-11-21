@@ -31,6 +31,10 @@ const baseDeps = [
         "src": "https://github.com/PrivateSky/browser-server"
     },
     {
+        "name": "choreo",
+        "src": "https://github.com/PrivateSky/choreo.git"
+    },
+    {
         "name": "browserfs-dist",
         "src": "https://github.com/PrivateSky/browserfs-dist"
     },

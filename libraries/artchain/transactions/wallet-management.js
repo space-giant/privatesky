@@ -1,8 +1,6 @@
 $$.transaction.describe("WalletManagement", {
   create: function(owner, token) {
-    let transaction = $$.blockchain.beginTransaction({});
-
-    let account = transaction.lookup("artchain.Account", owner);
+    let account = this.transaction.lookup("artchain.Account", owner);
     account.init(); // ensure that the account is created
 
     if (account.isTokenPresent(token)) {
@@ -15,7 +13,7 @@ $$.transaction.describe("WalletManagement", {
       return this.return(`Owner ${owner} already has an wallet for token ${token}!`);
     }
 
-    let wallet = transaction.lookup("artchain.Wallet", walletAlias);
+    let wallet = this.transaction.lookup("artchain.Wallet", walletAlias);
     if (!wallet.init(walletAlias, token, owner)) {
       return this.return(
         `Owner ${owner} cannot create wallet for token ${token} because generated wallet address (${walletAlias}) is already in use!`
@@ -23,9 +21,9 @@ $$.transaction.describe("WalletManagement", {
     }
 
     try {
-      transaction.add(account);
-      transaction.add(wallet);
-      $$.blockchain.commit(transaction);
+      this.transaction.add(account);
+      this.transaction.add(wallet);
+      this.transaction.commit();
     } catch (err) {
       return this.return(`Wallet creation failed for owner ${owner} and token ${token}! ${err ? err.message : ""}`);
     }
@@ -34,9 +32,7 @@ $$.transaction.describe("WalletManagement", {
   },
 
   close: function(walletAlias) {
-    let transaction = $$.blockchain.beginTransaction({});
-
-    let wallet = transaction.lookup("artchain.Wallet", walletAlias);
+    let wallet = this.transaction.lookup("artchain.Wallet", walletAlias);
 
     if (!wallet.isValid()) return this.return("Invalid wallet!");
     if (!wallet.isActive()) return this.return("Wallet is not active!");
@@ -47,8 +43,8 @@ $$.transaction.describe("WalletManagement", {
     if (!wallet.close()) return this.return("Wallet closing procedure failed!");
 
     try {
-      transaction.add(wallet);
-      $$.blockchain.commit(transaction);
+      this.transaction.add(wallet);
+      this.transaction.commit();
     } catch (err) {
       return this.return(`Wallet closing procedure failed! ${err ? err.message : ""}`);
     }
@@ -57,22 +53,20 @@ $$.transaction.describe("WalletManagement", {
   },
 
   transfer: function(sourceWalletAlias, targetWalletAlias, token, amount) {
-    let transaction = $$.blockchain.beginTransaction({});
-
-    let sourceWallet = transaction.lookup("artchain.Wallet", sourceWalletAlias);
+    let sourceWallet = this.transaction.lookup("artchain.Wallet", sourceWalletAlias);
     if (sourceWallet.getToken() !== token || !sourceWallet.transfer(amount)) {
       return this.return("Source transfer failed!");
     }
 
-    let targetWallet = transaction.lookup("artchain.Wallet", targetWalletAlias);
+    let targetWallet = this.transaction.lookup("artchain.Wallet", targetWalletAlias);
     if (targetWallet.getToken() !== token || !targetWallet.receive(amount)) {
       return this.return("Target transfer failed!");
     }
 
     try {
-      transaction.add(sourceWallet);
-      transaction.add(targetWallet);
-      $$.blockchain.commit(transaction);
+      this.transaction.add(sourceWallet);
+      this.transaction.add(targetWallet);
+      this.transaction.commit();
     } catch (err) {
       return this.return(`Transfer failed! ${err ? err.message : ""}`);
     }
@@ -84,14 +78,13 @@ $$.transaction.describe("WalletManagement", {
   },
 
   balanceOf: function(walletAlias) {
-    let transaction = $$.blockchain.beginTransaction({});
-    let wallet = transaction.lookup("artchain.Wallet", walletAlias);
+    let wallet = this.transaction.lookup("artchain.Wallet", walletAlias);
 
     if (!wallet.isValid()) return this.return("Invalid wallet");
     if (!wallet.isActive()) return this.return("Wallet is not active.");
 
     try {
-      $$.blockchain.commit(transaction);
+      this.transaction.commit();
     } catch (err) {
       return this.return(`balanceOf failed! ${err ? err.message : ""}`);
     }

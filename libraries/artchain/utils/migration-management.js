@@ -6,9 +6,7 @@ $$.transaction.describe("MigrationManagement", {
       return this.return(`"${name}" migration failed! Invalid provided run function ${err ? err.message : ""}`);
     }
 
-    let transaction = $$.blockchain.beginTransaction({});
-
-    let migrationRun = transaction.lookup("artchain.Migration", name);
+    let migrationRun = this.transaction.lookup("artchain.Migration", name);
 
     if (migrationRun.isExecuted(name)) {
       console.log(`"${name}" migration already executed!`);
@@ -16,12 +14,12 @@ $$.transaction.describe("MigrationManagement", {
     }
 
     run
-      .call(this, transaction)
+      .call(this, this.transaction)
       .then(result => {
         try {
           migrationRun.store(name, result);
-          transaction.add(migrationRun);
-          $$.blockchain.commit(transaction);
+          this.transaction.add(migrationRun);
+          this.transaction.commit();
         } catch (err) {
           console.log(err);
           return this.return(`"${name}" migration failed! ${err ? err.message : ""}`);

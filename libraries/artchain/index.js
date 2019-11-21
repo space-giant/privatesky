@@ -1,6 +1,22 @@
 if (typeof $$ !== "undefined" && typeof $$.blockchain === "undefined") {
-  const pskDB = require("pskdb");
-  $$.blockchain = pskDB.startDB("./database");
+  const fs = require("fs");
+  const blockchainDir = "./database";
+
+  fs.mkdirpSync(blockchainDir);
+
+  const blockchain = require("blockchain");
+  const worldStateCache = blockchain.createWorldStateCache("fs", blockchainDir);
+  const historyStorage = blockchain.createHistoryStorage("fs", blockchainDir);
+  const consensusAlgorithm = blockchain.createConsensusAlgorithm("direct");
+  const signatureProvider = blockchain.createSignatureProvider("permissive");
+
+  $$.blockchain = blockchain.createABlockchain(
+    worldStateCache,
+    historyStorage,
+    consensusAlgorithm,
+    signatureProvider,
+    false
+  );
 }
 
 // const path = require("path");

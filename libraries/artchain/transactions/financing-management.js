@@ -1,11 +1,9 @@
 $$.transaction.describe("FinancingManagement", {
   create: function(beneficiary, financingInfo) {
-    let transaction = $$.blockchain.beginTransaction({});
-
     let owner = $$.uidGenerator.safe_uuid();
 
     let financingAlias = $$.uidGenerator.safe_uuid();
-    let financing = transaction.lookup("artchain.Financing", financingAlias);
+    let financing = this.transaction.lookup("artchain.Financing", financingAlias);
     if (!financing.init(financingAlias, owner, beneficiary, financingInfo)) {
       return this.return(
         `Financing ${financingAlias} cannot be created for beneficiar ${beneficiary} because financing exists already!`
@@ -13,8 +11,8 @@ $$.transaction.describe("FinancingManagement", {
     }
 
     try {
-      transaction.add(financing);
-      $$.blockchain.commit(transaction);
+      this.transaction.add(financing);
+      this.transaction.commit();
     } catch (err) {
       return this.return(`Financing creation failed for beneficiary ${beneficiary}! ${err ? err.message : ""}`);
     }
@@ -26,16 +24,14 @@ $$.transaction.describe("FinancingManagement", {
   },
 
   updateInfo: function(financingAlias, financingInfo) {
-    let transaction = $$.blockchain.beginTransaction({});
-
-    let financing = transaction.lookup("artchain.Financing", financingAlias);
+    let financing = this.transaction.lookup("artchain.Financing", financingAlias);
     if (!financing.updateInfo(financingInfo)) {
       return this.return(`Financing ${financingAlias} cannot be updated because it doesn't exist!`);
     }
 
     try {
-      transaction.add(financing);
-      $$.blockchain.commit(transaction);
+      this.transaction.add(financing);
+      this.transaction.commit();
     } catch (err) {
       return this.return(`Financing update info failed! ${err ? err.message : ""}`);
     }
@@ -47,9 +43,8 @@ $$.transaction.describe("FinancingManagement", {
   },
 
   approve: function(financingAlias) {
-    let transaction = $$.blockchain.beginTransaction({});
 
-    let financing = transaction.lookup("artchain.Financing", financingAlias);
+    let financing = this.transaction.lookup("artchain.Financing", financingAlias);
     if (!financing.approve()) {
       return this.return(
         `Financing ${financingAlias} cannot be approved because it has the following status: ${financing.getStatus()}!`
@@ -57,8 +52,8 @@ $$.transaction.describe("FinancingManagement", {
     }
 
     try {
-      transaction.add(financing);
-      $$.blockchain.commit(transaction);
+      this.transaction.add(financing);
+      this.transaction.commit();
     } catch (err) {
       return this.return(`Financing ${financingAlias} failed to be approved! ${err ? err.message : ""}`);
     }
@@ -67,9 +62,7 @@ $$.transaction.describe("FinancingManagement", {
   },
 
   reject: function(financingAlias) {
-    let transaction = $$.blockchain.beginTransaction({});
-
-    let financing = transaction.lookup("artchain.Financing", financingAlias);
+    let financing = this.transaction.lookup("artchain.Financing", financingAlias);
     if (!financing.reject()) {
       return this.return(
         `Financing ${financingAlias} cannot be rejectd because it has the following status: ${financing.getStatus()}!`
@@ -77,8 +70,8 @@ $$.transaction.describe("FinancingManagement", {
     }
 
     try {
-      transaction.add(financing);
-      $$.blockchain.commit(transaction);
+      this.transaction.add(financing);
+      this.transaction.commit();
     } catch (err) {
       return this.return(`Financing ${financingAlias} failed to be rejectd! ${err ? err.message : ""}`);
     }
@@ -87,9 +80,8 @@ $$.transaction.describe("FinancingManagement", {
   },
 
   apply: function(financingAlias) {
-    let transaction = $$.blockchain.beginTransaction({});
 
-    let financing = transaction.lookup("artchain.Financing", financingAlias);
+    let financing = this.transaction.lookup("artchain.Financing", financingAlias);
     if (!financing.apply()) {
       return this.return(
         `Financing ${financingAlias} cannot be applied because it has the following status: ${financing.getStatus()}!`
@@ -97,8 +89,8 @@ $$.transaction.describe("FinancingManagement", {
     }
 
     try {
-      transaction.add(financing);
-      $$.blockchain.commit(transaction);
+      this.transaction.add(financing);
+      this.transaction.commit();
     } catch (err) {
       return this.return(`Financing ${financingAlias} failed to be applied! ${err ? err.message : ""}`);
     }
@@ -107,9 +99,7 @@ $$.transaction.describe("FinancingManagement", {
   },
 
   start: function(financingAlias, tokenInfo, mainToken) {
-    let transaction = $$.blockchain.beginTransaction({});
-
-    let financing = transaction.lookup("artchain.Financing", financingAlias);
+    let financing = this.transaction.lookup("artchain.Financing", financingAlias);
     if (!financing.isValid()) {
       return this.return(`Financing ${financingAlias} is not valid!`);
     }
@@ -122,11 +112,11 @@ $$.transaction.describe("FinancingManagement", {
 
     let owner = financing.getOwner();
 
-    let account = transaction.lookup("artchain.Account", owner);
+    let account = this.transaction.lookup("artchain.Account", owner);
     account.init(); // ensure that the account is created
 
     let sharesToken = $$.uidGenerator.safe_uuid();
-    let newToken = transaction.lookup("artchain.Token", sharesToken);
+    let newToken = this.transaction.lookup("artchain.Token", sharesToken);
 
     if (!newToken.init(sharesToken, tokenInfo.name, tokenInfo.symbol, owner))
       return this.return(`Share token ${sharesToken} already exists!`);
@@ -137,7 +127,7 @@ $$.transaction.describe("FinancingManagement", {
       return this.return(`Owner ${owner} already has an wallet for share token ${sharesToken}!`);
     }
 
-    let sharesWallet = transaction.lookup("artchain.Wallet", sharesWalletAlias);
+    let sharesWallet = this.transaction.lookup("artchain.Wallet", sharesWalletAlias);
     if (!sharesWallet.init(sharesWalletAlias, sharesToken, owner)) {
       return this.return(
         `Owner ${owner} cannot create wallet for token ${sharesToken} because generated wallet address (${sharesWalletAlias}) is already in use!`
@@ -149,7 +139,7 @@ $$.transaction.describe("FinancingManagement", {
       return this.return(`Owner ${owner} already has an wallet for main token ${mainToken}!`);
     }
 
-    let mainWallet = transaction.lookup("artchain.Wallet", mainWalletAlias);
+    let mainWallet = this.transaction.lookup("artchain.Wallet", mainWalletAlias);
     if (!mainWallet.init(mainWalletAlias, mainToken, owner)) {
       return this.return(
         `Owner ${owner} cannot create wallet for main token ${mainToken} because generated wallet address (${mainWalletAlias}) is already in use!`
@@ -163,12 +153,12 @@ $$.transaction.describe("FinancingManagement", {
     financing.start();
 
     try {
-      transaction.add(financing);
-      transaction.add(account);
-      transaction.add(newToken);
-      transaction.add(sharesWallet);
-      transaction.add(mainWallet);
-      $$.blockchain.commit(transaction);
+      this.transaction.add(financing);
+      this.transaction.add(account);
+      this.transaction.add(newToken);
+      this.transaction.add(sharesWallet);
+      this.transaction.add(mainWallet);
+      this.transaction.commit();
     } catch (err) {
       return this.return(`Financing ${financingAlias} failed to be started! ${err ? err.message : ""}`);
     }
@@ -182,9 +172,8 @@ $$.transaction.describe("FinancingManagement", {
   },
 
   stop: function(financingAlias) {
-    let transaction = $$.blockchain.beginTransaction({});
 
-    let financing = transaction.lookup("artchain.Financing", financingAlias);
+    let financing = this.transaction.lookup("artchain.Financing", financingAlias);
     if (!financing.stop()) {
       return this.return(
         `Financing ${financingAlias} cannot be stoped because it has the following status: ${financing.getStatus()}!`
@@ -192,8 +181,8 @@ $$.transaction.describe("FinancingManagement", {
     }
 
     try {
-      transaction.add(financing);
-      $$.blockchain.commit(transaction);
+      this.transaction.add(financing);
+      this.transaction.commit();
     } catch (err) {
       return this.return(`Financing ${financingAlias} failed to be stoped! ${err ? err.message : ""}`);
     }
@@ -202,9 +191,7 @@ $$.transaction.describe("FinancingManagement", {
   },
 
   delete: function(financingAlias) {
-    let transaction = $$.blockchain.beginTransaction({});
-
-    let financing = transaction.lookup("artchain.Financing", financingAlias);
+    let financing = this.transaction.lookup("artchain.Financing", financingAlias);
     if (!financing.delete()) {
       return this.return(
         `Financing ${financingAlias} cannot be deleted because it has the following status: ${financing.getStatus()}!`
@@ -212,8 +199,8 @@ $$.transaction.describe("FinancingManagement", {
     }
 
     try {
-      transaction.add(financing);
-      $$.blockchain.commit(transaction);
+      this.transaction.add(financing);
+      this.transaction.commit();
     } catch (err) {
       return this.return(`Financing ${financingAlias} failed to be deleted! ${err ? err.message : ""}`);
     }
@@ -222,11 +209,9 @@ $$.transaction.describe("FinancingManagement", {
   },
 
   finalize: function(financingAlias) {
-    let transaction = $$.blockchain.beginTransaction({});
+    let financing = this.transaction.lookup("artchain.Financing", financingAlias);
 
-    let financing = transaction.lookup("artchain.Financing", financingAlias);
-
-    let ownerSharesWallet = transaction.lookup("artchain.Wallet", financing.ownerSharesWallet);
+    let ownerSharesWallet = this.transaction.lookup("artchain.Wallet", financing.ownerSharesWallet);
 
     if (!ownerSharesWallet.isValid()) return this.return("Invalid wallet");
     if (!ownerSharesWallet.isActive()) return this.return("Wallet is not active.");
@@ -243,8 +228,8 @@ $$.transaction.describe("FinancingManagement", {
     }
 
     try {
-      transaction.add(financing);
-      $$.blockchain.commit(transaction);
+      this.transaction.add(financing);
+      this.transaction.commit();
     } catch (err) {
       return this.return(`Financing ${financingAlias} failed to be finalized! ${err ? err.message : ""}`);
     }
