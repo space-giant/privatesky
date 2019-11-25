@@ -2,7 +2,7 @@ if (typeof $$ !== "undefined" && typeof $$.blockchain === "undefined") {
   const fs = require("fs");
   const blockchainDir = "./database";
 
-  fs.mkdirpSync(blockchainDir);
+  fs.mkdirSync(blockchainDir);
 
   const blockchain = require("blockchain");
   const worldStateCache = blockchain.createWorldStateCache("fs", blockchainDir);

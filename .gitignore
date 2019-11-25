@@ -4,7 +4,8 @@ modules
 psknode/bundles
 builds/tmp/*_intermediar.js
 tests
-libraries
+libraries/*
+!libraries/artchain/
 tmp
 package-lock.json
 latest-change-set.txt
